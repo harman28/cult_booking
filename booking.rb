@@ -105,11 +105,11 @@ def log msg
 end
 
 def preset_things file
-  @name = file.split((/[\.,\/]/))[1]
+  @name = file.split((/[\.,\/]/))[-2]
 
-  @logfile = File.open("logs/#{@name}.log", 'a')
+  @logfile = File.open("#{@dir}/logs/#{@name}.log", 'a')
 
-  @bookingfile = File.open("logs/#{@name}_bookings.txt", 'a')
+  @bookingfile = File.open("#{@dir}/logs/#{@name}_bookings.txt", 'a')
 
   @config = JSON.parse(File.read(file))
 
@@ -117,7 +117,9 @@ def preset_things file
   fetch_classes
 end
 
-Dir.glob("schedules/*.json") do |file|
+@dir = File.expand_path File.dirname(__FILE__)
+
+Dir["#{@dir}/schedules/*.json"].each do |file|
   preset_things file
 
   booking_count = get_booking_count
@@ -125,13 +127,17 @@ Dir.glob("schedules/*.json") do |file|
   log "NEW RUN: #{Time.now}"
 
   @classes.each do |clas|
-    break if booking_count >= MAX_BOOKINGS
+    if booking_count >= MAX_BOOKINGS
+      log "PASSED: #{booking_count} bookings done, "\
+          "no more possible at the moment."
+      break
+    end
     if is_desired? clas
       if already_booked? clas
         log "SKIPPED: #{clas['id']} was already booked."
       elsif available? clas
         book clas
-        log "SUCCESS: Booked #{clas['id']}"
+        log "SUCCESS: Booked #{clas['id']}."
         booking_count += 1
       else
         log "FAILED: #{clas['id']} wasn't available."
