@@ -6,9 +6,9 @@ My friend Harshit appears to have discipline, so he can get his Cult classes boo
 ```sh
 cp schedules/harshit.json.sample schedules/harshit.json
 ```
-A cronjob on a remote machine will run this script every hour or so. The log files will be hosted over a web server.
+A cronjob on a remote machine will run this script every 3 hours or so. The log files will be hosted over a web server.
 ```sh
-0 * * * * ruby /home/harman/cult_booking/booking.rb
+0 */3 * * * ruby /home/harman/cult_booking/booking.rb
 ```
 If you want your classes booked too, and can't bother setting this up, open a pull request with a file like the one in `schedules/harshit.json.sample`. Plenty of room for everyone.
 
