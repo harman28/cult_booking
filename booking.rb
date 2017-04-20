@@ -122,6 +122,8 @@ Dir.glob("schedules/*.json") do |file|
 
   booking_count = get_booking_count
 
+  log "NEW RUN: #{Time.now}"
+
   @classes.each do |clas|
     break if booking_count >= MAX_BOOKINGS
     if is_desired? clas
