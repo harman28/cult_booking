@@ -5,10 +5,20 @@ require 'httparty'
 
 MAX_BOOKINGS = 3
 
+WORKOUT_MAPPING = {
+  1  => "Yoga",
+  2  => "MMA",
+  3  => "Zumba",
+  4  => "Boxing",
+  5  => "S & C",
+  6  => "Flywheel",
+  22 => "HRX Workout",
+}
+
 def fetch_bookings
   response = HTTParty.get(
-    "https://api.cultfit.in/v1/bookings", 
-    headers: 
+    "https://api.cultfit.in/v1/bookings",
+    headers:
     {
       "authorization" => @config['token']
     })
@@ -19,26 +29,25 @@ def fetch_bookings
 end
 
 def book clas
-  @bookingfile.puts "#{clas['id']}"
-  # HTTParty.post(
-  #   "https://api.cultfit.in/v1/bookings", 
-  #   { 
-  #     body: {
-  #       "classID"          => clas['id'],
-  #       "classVersion"     => "0",
-  #       "couponCode"       => null,
-  #       "requestInitiator" => "webApp"
-  #     },
-  #     headers: {
-  #       "authorization" => @config['token']
-  #     }
-  #   })
+  response = HTTParty.post(
+    "https://api.cultfit.in/v1/bookings",
+    {
+      body: {
+        "classID"          => clas['id'],
+        "classVersion"     => "0",
+        "requestInitiator" => "webApp"
+      },
+      headers: {
+        "authorization" => @config['token']
+      }
+    })
+  log_booking clas
 end
 
 def fetch_classes
   response = HTTParty.get(
-    "https://api.cultfit.in/v1/classes?center=#{@config['center']}", 
-    headers: 
+    "https://api.cultfit.in/v1/classes?center=#{@config['center']}",
+    headers:
     {
       "authorization" => @config['token']
     })
@@ -76,11 +85,19 @@ def is_desired? clas
 
     workout_match = desired_class['workout'] == clas['workoutID']
     time_match = desired_class['time'] == get_time(clas)
-  
+
     matching = workout_match && time_match
   end
 
   return matching
+end
+
+def log_booking clas
+  workout_name = WORKOUT_MAPPING[clas['workoutID']]
+  msg = "#{Time.now}: "
+  msg += "Booked #{workout_name} at #{clas['startTime']} on #{clas['date']}"
+  @bookingfile.puts msg
+  puts msg
 end
 
 def log msg
