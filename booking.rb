@@ -5,9 +5,6 @@ require 'httparty'
 
 MAX_BOOKINGS = 3
 
-file = File.read('schedules/harshit.json');
-@config = JSON.parse(file)
-
 def fetch_bookings
   response = HTTParty.get(
     "https://api.cultfit.in/v1/bookings", 
@@ -17,10 +14,12 @@ def fetch_bookings
     })
 
   @bookings = JSON.parse(response.body)['bookings']
+
+  @upcoming_bookings = @bookings.select{|boo| boo['label'] == 'Upcoming'}
 end
 
 def book clas
-  p "Booked #{clas['id']}"
+  @bookingfile.puts "#{clas['id']}"
   # HTTParty.post(
   #   "https://api.cultfit.in/v1/bookings", 
   #   { 
@@ -52,7 +51,7 @@ def get_booking_count
 end
 
 def already_booked? clas
-  @bookings.select{|boo| boo['id'] == clas['id']}.any?
+  @upcoming_bookings.select{|boo| boo['classID'] == clas['id']}.any?
 end
 
 def available? clas
@@ -84,20 +83,40 @@ def is_desired? clas
   return matching
 end
 
-fetch_bookings
-fetch_classes
+def log msg
+  @logfile.puts msg
+end
 
-booking_count = get_booking_count
+def preset_things file
+  @name = file.split((/[\.,\/]/))[1]
 
-@classes.each do |clas|
-  break if booking_count >= MAX_BOOKINGS
+  @logfile = File.open("logs/#{@name}.log", 'a')
 
-  if is_desired? clas and not already_booked? clas
-    if available? clas
-      book clas
-      booking_count += 1
-    else
-      p "#{cl}"
+  @bookingfile = File.open("logs/#{@name}_bookings.txt", 'a')
+
+  @config = JSON.parse(File.read(file))
+
+  fetch_bookings
+  fetch_classes
+end
+
+Dir.glob("schedules/*.json") do |file|
+  preset_things file
+
+  booking_count = get_booking_count
+
+  @classes.each do |clas|
+    break if booking_count >= MAX_BOOKINGS
+    if is_desired? clas
+      if already_booked? clas
+        log "SKIPPED: #{clas['id']} was already booked."
+      elsif available? clas
+        book clas
+        log "SUCCESS: Booked #{clas['id']}"
+        booking_count += 1
+      else
+        log "FAILED: #{clas['id']} wasn't available."
+      end
     end
   end
 end
