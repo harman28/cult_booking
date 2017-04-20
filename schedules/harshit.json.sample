@@ -1,0 +1,26 @@
+{
+  "token": "<auth token>",
+  "center": 6,
+  "schedule": {
+    "monday": {
+      "time": 7,
+      "workout": 2
+    },
+    "tuesday": {
+      "time": 7,
+      "workout": 5
+    },
+    "wednesday": {
+      "time": 7,
+      "workout": 1
+    },
+    "thursday": {
+      "time": 7,
+      "workout": 5
+    },
+    "friday": {
+      "time": 7,
+      "workout": 5
+    }
+  }
+}
