@@ -83,7 +83,7 @@ def is_desired? clas
   if @config['schedule'].keys.include? wday
     desired_class = @config['schedule'][wday]
 
-    workout_match = desired_class['workout'] == clas['workoutID']
+    workout_match = desired_class['workout'].include? clas['workoutID']
     time_match = desired_class['time'].include? get_time(clas)
 
     matching = workout_match && time_match
